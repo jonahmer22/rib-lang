@@ -20,7 +20,8 @@ all: $(TARGET)
 
 $(CORTEX_LIB):
 	git submodule update --init --recursive
-	$(MAKE) -C $(CORTEX_DIR) lib
+	$(MAKE) -C $(CORTEX_DIR) all lib
+	cd $(CORTEX_DIR) && pytest
 
 $(TARGET): $(OBJS)
 	$(CC) $^ $(LDFLAGS) $(CFLAGS) -o $@
