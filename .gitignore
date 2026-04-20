@@ -1,3 +1,9 @@
+# MacOS
+*.DS_Store
+
+# binary
+rib-lang
+
 # Prerequisites
 *.d
 
@@ -32,7 +38,7 @@
 *.exe
 *.out
 *.app
-*.i*86
+*.*86
 *.x86_64
 *.hex
 
