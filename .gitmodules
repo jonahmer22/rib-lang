@@ -1,3 +1,0 @@
-[submodule "deps/cortex-vm"]
-	path = deps/cortex-vm
-	url = https://github.com/jonahmer22/cortex-vm
