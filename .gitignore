@@ -2,10 +2,14 @@
 *.DS_Store
 
 # binary
-rib-lang
+rib
 
 # build stuff
 build/
+cortex-references/
+
+# ai stuff. same rules as cortex
+.claude/
 
 # Prerequisites
 *.d

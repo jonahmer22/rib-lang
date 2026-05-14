@@ -2,7 +2,7 @@
 set -e
 
 INSTALL_DIR=/usr/local/bin
-BINARY=rib-lang
+BINARY=rib
 
 if [ ! -f /usr/local/lib/libcortex-vm.a ] || [ ! -f /usr/local/include/cortex-vm.h ]; then
     echo "cortex-vm not found, installing..."

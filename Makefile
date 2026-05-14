@@ -1,7 +1,7 @@
 SRC_DIR		:= src
 INC_DIR		:= include
 BUILD_DIR	:= build
-TARGET		:= rib-lang
+TARGET		:= rib
 
 CFLAGS		+= -I$(INC_DIR)
 LDFLAGS		+= -lcortex-vm -lm
