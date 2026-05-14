@@ -6,6 +6,8 @@
 // Header includes
 
 int main(){
+    CortexVM *vm = cortexVMCreate();
+
     // minimal example that just prints 5 and exits with that value
     const char *src=
         "addi a0, zero, 5"
@@ -14,5 +16,5 @@ int main(){
         "addi a13, zero, 0"
         "syscall";
 
-    return cortexExecSource(src);
+    return cortexVMExecSource(vm, src);
 }

@@ -4,6 +4,9 @@
 # binary
 rib-lang
 
+# build stuff
+build/
+
 # Prerequisites
 *.d
 
