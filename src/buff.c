@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "../include/buff.h"
 
@@ -25,4 +26,6 @@ void buffDestroy(Buffer *buff){
     buff->buffSize = 0;
 
     free(buff);
+
+    buff = NULL;
 }
