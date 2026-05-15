@@ -221,6 +221,7 @@ static uint8_t eval(const char **p){
 					exit(EXIT_FAILURE);
 				}
 				varIdx = varCount++;
+
 				size_t copyLen = len < MAX_VAR_NAME_LEN - 1 ? len : MAX_VAR_NAME_LEN - 1;
 				memcpy(vars[varIdx].name, ep, copyLen);
 				vars[varIdx].name[copyLen] = '\0';
@@ -310,8 +311,7 @@ static uint8_t evalCond(const char **p){
 			break;
 		}
 		default:{
-			fprintf(stderr, "[FATAL]: done.\n");
-			exit(EXIT_FAILURE);
+			break;
 		}
 	}
 
@@ -333,16 +333,13 @@ int main(){
 	puts("Reduced Instruction Basic\n");
 
 	src = buffCreate();
-	buffEnsureSize(src, sizeof(char) * 1000);
-
-	char tmp[] =
-		"addi a0, a0, 5"
-		"addi a13, zero, 1"
-		"syscall"
-		"addi a13, zero, 0"
-		"syscall";
-
-	memcpy(src->buff, tmp, sizeof((tmp)));
+	emitf("addi s0, sp, 0\n");
+	
+	const char *tmp = 
+	"x=5+5";
+	evalCond(&tmp);
+	
+	printf("%s\n\nis src\n", src->buff);
 
 	CortexVM *vm = cortexVMCreate();
 
