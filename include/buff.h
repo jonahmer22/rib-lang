@@ -16,6 +16,8 @@ Buffer *buffCreate(void);
 
 void buffEnsureSize(Buffer *buff, size_t needed);
 
+void buffFlush(Buffer *buff);
+
 void buffDestroy(Buffer *buff);
 
 #endif

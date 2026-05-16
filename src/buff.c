@@ -19,6 +19,15 @@ void buffEnsureSize(Buffer *buff, size_t needed){
     }
 }
 
+void buffFlush(Buffer *buff){
+    if(buff->buffSize > 0){
+        free(buff->buff);
+    }
+
+    buff->buffSize = BASE_BUFF_SIZE;
+    buff->buff = malloc(sizeof(char) * buff->buffSize);
+}
+
 void buffDestroy(Buffer *buff){
     if(buff->buffSize > 0){
         free(buff->buff);

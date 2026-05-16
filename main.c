@@ -76,19 +76,9 @@ static uint8_t pFactor(void){
 	int reg = nextReg++;
 
 	if(isInt(ep)){
-		const char *tmp = ep;
-		for(; isInt(tmp); tmp++);
+		float val = strtof(ep, (char **)&ep);
 
-		if(*tmp == '.'){
-			float val = strtof(ep, (char **)&ep);
-
-			emitf("faddi t%d, zero, %f\n", reg - 32, val);
-		}
-		else{
-			int32_t val = strtoll(ep, (char **)&ep, 0);
-
-			emitf("addi t%d, zero, %d\n", reg - 32, val);
-		}
+		emitf("faddi t%d, zero, %.4f\n", reg - 32, val);
 	}
 	else if(isAlpha(ep)){
 		const char *tmp = ep;
@@ -122,6 +112,7 @@ static uint8_t pFactor(void){
 static uint8_t pTerm(void){
 	skip();
 	uint8_t lhs = pFactor();
+	skip();
 	
 	while(*ep == '*' || *ep == '/'){
 		skip();
@@ -132,7 +123,7 @@ static uint8_t pTerm(void){
 
 				uint8_t next = pFactor();
 
-				emitf("mul t%d, t%d, t%d\n", lhs - 32, lhs - 32, next - 32);
+				emitf("fmul t%d, t%d, t%d\n", lhs - 32, lhs - 32, next - 32);
 				break;
 			}
 			case '/':{
@@ -140,7 +131,7 @@ static uint8_t pTerm(void){
 
 				uint8_t next = pFactor();
 
-				emitf("div t%d, t%d, t%d\n", lhs - 32, lhs - 32, next - 32);
+				emitf("fdiv t%d, t%d, t%d\n", lhs - 32, lhs - 32, next - 32);
 				break;
 			}
 			default:{
@@ -158,6 +149,7 @@ static uint8_t pTerm(void){
 static uint8_t pExpr(void){
 	skip();
 	uint8_t lhs = pTerm();
+	skip();
 	
 	while(*ep == '+' || *ep == '-'){
 		skip();
@@ -168,7 +160,7 @@ static uint8_t pExpr(void){
 
 				uint8_t next = pTerm();
 
-				emitf("add t%d, t%d, t%d\n", lhs - 32, lhs - 32, next - 32);
+				emitf("fadd t%d, t%d, t%d\n", lhs - 32, lhs - 32, next - 32);
 				break;
 			}
 			case '-':{
@@ -176,7 +168,7 @@ static uint8_t pExpr(void){
 
 				uint8_t next = pTerm();
 
-				emitf("sub t%d, t%d, t%d\n", lhs - 32, lhs - 32, next - 32);
+				emitf("fsub t%d, t%d, t%d\n", lhs - 32, lhs - 32, next - 32);
 				break;
 			}
 			default:{
@@ -321,35 +313,84 @@ static uint8_t evalCond(const char **p){
 	return lhs;
 }
 
-static uint8_t exec(const char *s){
+static void exec(const char *s){
+	while(*s == ' ')
+		s++;
 
-}
+	if(strncmp(s, "print", 5) == 0 && !isAlphaNum(s + 5)){
+		s += 5;
 
-static void run_prog(void){
+		while(1){
+			uint8_t reg = eval(&s);
+			emitf("addi a0, t%d, 0\n", reg - 32);
+			emitf("addi a1, zero, %d\n", 4);	// number here is precision of floats printed
+			emitf("addi a13, zero, 4\n");
+			emitf("syscall\n");
 
+			while(*s == ' ')
+				s++;
+			if(*s != ','){
+				break;
+			}
+			s++;
+
+			// tab for next entry
+			emitf("addi a0, zero, '\\t'\n");
+			emitf("addi a13, zero, 3\n");
+			emitf("syscall\n");
+		}
+
+		// tack on the newline
+		emitf("addi a0, zero, '\\n'\n");
+		emitf("addi a13, zero, 3\n");
+		emitf("syscall\n");
+	}
+	else{
+		eval(&s);
+	}
+
+	nextReg = 32;
 }
 
 int main(){
-	puts("Reduced Instruction Basic\n");
-
-	src = buffCreate();
-	emitf("addi s0, sp, 0\n");
-	
-	const char *tmp = 
-	"x=5+5";
-	evalCond(&tmp);
-	
-	printf("%s\n\nis src\n", src->buff);
-
+	int exitC = 0;
 	CortexVM *vm = cortexVMCreate();
 
+	// set up frame pointer once
+	src = buffCreate();
+	emitf("addi s0, sp, 0\n");
 	cortexVMExecSource(vm, src->buff);
 
-	int exit_c = cortexVMExecSource(vm, src->buff);
+	puts("Reduced Instruction Basic");
 
-	cortexVMDestroy(vm);
+	// repl
+	for(;;){
+		char line[1024] = {0};
+
+		printf("> ");
+		fflush(stdout);
+
+		if(!fgets(line, sizeof(line), stdin))
+			break;
+		if(memcmp(line, "exit", 4) == 0)
+			break;
+		
+		// reset buffer for this line
+		writePos = 0;
+		
+		exec(line);
+		src->buff[writePos] = '\0';
+
+		char *copy = strdup(src->buff);
+
+		printf("--- asm ---\n%s\n---\n", copy);
+		
+		exitC = cortexVMExecSource(vm, copy);
+		fflush(stdout);
+	}
 
 	buffDestroy(src);
+	cortexVMDestroy(vm);
 
-	return exit_c;
+	return exitC;
 }
