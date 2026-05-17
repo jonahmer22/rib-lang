@@ -122,7 +122,7 @@ static uint8_t pFactor(void){
 	skip();
 	int reg = nextReg++;
 
-	if(isInt(ep)){
+	if(isInt(ep) || *ep == '.'){
 		float val = strtof(ep, (char **)&ep);
 
 		emitf("faddi t%d, zero, %.4f\n", reg - 32, val);
